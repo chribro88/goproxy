@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"sync/atomic"
 )
 
@@ -86,9 +87,11 @@ func removeProxyHeaders(ctx *ProxyCtx, r *http.Request) {
 	r.Header.Del("Accept-Encoding")
 	// curl can add that, see
 	// https://jdebp.eu./FGA/web-proxy-connection-header.html
-	r.Header.Del("Proxy-Connection")
-	r.Header.Del("Proxy-Authenticate")
-	r.Header.Del("Proxy-Authorization")
+	for key, _ := range r.Header {
+		if strings.HasPrefix(key, "Proxy-") || strings.HasPrefix(key, "X-Proxy-") {
+			r.Header.Del(key)
+		}
+	}
 	// Connection, Authenticate and Authorization are single hop Header:
 	// http://www.w3.org/Protocols/rfc2616/rfc2616.txt
 	// 14.10 Connection
